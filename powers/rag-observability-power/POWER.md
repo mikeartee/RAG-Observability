@@ -1,63 +1,42 @@
 ---
-name: "rag-observability-power"
-displayName: "RAG Observability Power"
-description: "Comprehensive RAG system monitoring with drift detection, failure capture, and self-improvement capabilities. Answers where, why, and how to fix RAG failures."
+name: "rag-observability"
+displayName: "RAG Observability"
+description: "Comprehensive guide for RAG system monitoring with drift detection, failure capture, and self-improvement patterns. Learn where, why, and how to fix RAG failures."
 keywords: ["rag", "observability", "monitoring", "drift-detection", "error-tracking", "self-improvement"]
-author: "RAG Observability Team"
+author: "Michael Rewiri-Thorsen"
 ---
 
-# RAG Observability Power
+# RAG Observability
 
-A comprehensive Kiro Power for RAG (Retrieval-Augmented Generation) system observability and self-improvement. This power answers three critical questions when RAG failures occur: **Where did it break?** **Why did it break?** **How do we fix it?**
+A comprehensive knowledge base for RAG (Retrieval-Augmented Generation) system observability and self-improvement. This power answers three critical questions when RAG failures occur: **Where did it break?** **Why did it break?** **How do we fix it?**
 
 ## Overview
 
-The RAG Observability Power combines statistical process control, deterministic failure capture, and machine learning to provide complete visibility into RAG system behavior. It learns from past failures to prevent future issues and suggests fixes based on accumulated knowledge.
+This power provides patterns, best practices, and implementation guidance for building observable RAG systems. It covers statistical process control, deterministic failure capture, and machine learning approaches to provide complete visibility into RAG system behavior.
 
-### Key Features
+### Key Concepts
 
 - **Statistical Process Control**: Monitor RAG performance over populations of queries, not just individual failures
 - **Drift Detection**: Automatically detect when RAG performance degrades beyond acceptable bounds
 - **Code Correlation**: Link performance changes to specific code commits
 - **Failure Capture & Replay**: Make probabilistic RAG failures deterministically reproducible
-- **Error Knowledge Base**: RAG-enabled storage of errors, fixes, and patterns with semantic search
+- **Error Knowledge Base**: Store errors, fixes, and patterns with semantic search
 - **Self-Improvement Loop**: Surface relevant past errors during coding to prevent repeating mistakes
-- **Fix Suggestions**: Automatically suggest solutions based on similar past errors
+- **Fix Suggestions**: Suggest solutions based on similar past errors
 
 ## Available Steering Files
 
 This power includes three comprehensive steering files with detailed patterns and best practices:
 
 - **rag-error-handling** - Best practices for handling and learning from RAG system errors, including error classification, recovery strategies, and prevention patterns
-- **rag-monitoring-best-practices** - Guidelines for effective RAG system monitoring and observability, covering statistical process control and alerting strategies  
+- **rag-monitoring-best-practices** - Guidelines for effective RAG system monitoring and observability, covering statistical process control and alerting strategies
 - **rag-self-improvement** - Patterns for building self-improving RAG systems that learn from experience and continuously optimize performance
 
 Call action "readSteering" to access specific steering files as needed for your RAG implementation.
 
-## Available MCP Tools
-
-This power provides 8 MCP tools for comprehensive RAG system monitoring and improvement:
-
-### Core Monitoring Tools
-
-- **`rag_log_query`**: Log RAG query events with quality metrics for monitoring and analysis
-- **`rag_get_statistics`**: Get RAG system statistics for time windows with granular breakdowns
-- **`rag_get_drift_alerts`**: Get active performance drift alerts showing degradation
-
-### Error Management Tools
-
-- **`rag_get_recent_failures`**: Get recent failures with full context for debugging
-- **`rag_replay_failure`**: Replay captured failures to reproduce probabilistic issues
-- **`rag_search_similar_errors`**: Search for similar past errors using semantic search
-
-### Self-Improvement Tools
-
-- **`rag_get_relevant_errors`**: Get relevant errors for current coding context to avoid repeating mistakes
-- **`rag_suggest_fixes`**: Get fix suggestions based on similar past errors and success rates
-
 ## Architecture
 
-The power follows a layered architecture inspired by Sentry's approach to error monitoring, adapted for probabilistic RAG systems:
+The recommended architecture follows a layered approach inspired by Sentry's error monitoring, adapted for probabilistic RAG systems:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -82,71 +61,47 @@ The power follows a layered architecture inspired by Sentry's approach to error 
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Onboarding
+## Core Components
 
-### Prerequisites
+### RAG Monitor
 
-- **Vector Database**: Pinecone or Chroma for semantic error search
-- **Node.js**: Version 16+ for MCP server execution
-- **Git Repository**: For code correlation features
-- **RAG System**: Existing RAG implementation to monitor
+Intercepts and logs all RAG operations, capturing quality metrics, success rates, and performance data over time.
 
-### Installation
+**Key metrics to capture:**
+- Query text and retrieved documents
+- Relevance scores and confidence levels
+- Latency and token counts
+- Success/failure status with error details
 
-The MCP server is automatically configured when you install this power. No additional installation steps required.
+### Drift Detector
 
-### Configuration
+Applies statistical process control to identify when RAG performance degrades beyond acceptable bounds with confidence intervals.
 
-Configure the power through environment variables:
+**Control limits to configure:**
+- Success rate lower bound (e.g., 85%)
+- Relevance score lower bound (e.g., 0.7)
+- Latency upper bound (e.g., 5000ms)
+- Sigma level for confidence (e.g., 2-sigma = 95%)
 
-**Required Environment Variables:**
-- `VECTOR_DB_TYPE`: Vector database type (`pinecone` or `chroma`)
-- `VECTOR_DB_API_KEY`: API key for your vector database
-- `VECTOR_DB_ENVIRONMENT`: Environment/region for your vector database
-- `VECTOR_DB_INDEX_NAME`: Index name for storing error embeddings
+### Code Correlator
 
-**Optional Environment Variables:**
-- `STORAGE_TYPE`: Storage backend (`memory`, `sqlite`, `postgres`) - defaults to `memory`
-- `STORAGE_CONNECTION_STRING`: Database connection string (for sqlite/postgres)
-- `SUCCESS_RATE_LOWER`: Lower control limit for success rate (default: 0.85)
-- `RELEVANCE_SCORE_LOWER`: Lower control limit for relevance (default: 0.7)
-- `LATENCY_UPPER`: Upper control limit for latency in ms (default: 5000)
-- `CONTROL_SIGMA`: Sigma level for control limits (default: 2)
+Links performance degradation to code changes by analyzing git history and ranking commits by likelihood of causing issues.
 
-### Basic Setup
+### Failure Capturer
 
-```typescript
-// 1. Log RAG queries for monitoring
-await rag_log_query({
-  query: "What is the capital of France?",
-  retrievedDocuments: [
-    {
-      id: "doc-1",
-      content: "Paris is the capital of France...",
-      score: 0.95,
-      metadata: { source: "wikipedia" }
-    }
-  ],
-  generationOutput: "The capital of France is Paris.",
-  qualityMetrics: {
-    retrievalRelevanceScore: 0.95,
-    generationConfidence: 0.92,
-    latencyMs: 1200,
-    tokenCount: 150
-  },
-  success: true
-});
+Snapshots complete system state when failures occur, enabling deterministic replay of probabilistic failures.
 
-// 2. Monitor system health
-const stats = await rag_get_statistics({
-  startTime: "2024-01-01T00:00:00Z",
-  endTime: "2024-01-02T00:00:00Z",
-  granularity: "hour"
-});
+### Error Knowledge Base
 
-// 3. Check for performance issues
-const alerts = await rag_get_drift_alerts();
-```
+Stores errors and fixes with semantic search capabilities, enabling the system to learn from past issues.
+
+### Fix Suggester
+
+Retrieves and ranks fixes from the knowledge base based on similarity and historical success rates.
+
+### Self-Improvement Loop
+
+Integrates with coding sessions to surface relevant errors and auto-generate steering rules.
 
 ## Common Workflows
 
@@ -155,282 +110,127 @@ const alerts = await rag_get_drift_alerts();
 **Goal**: Monitor your RAG system's health and detect performance degradation
 
 **Steps:**
-1. **Log all RAG queries** (both successful and failed)
-2. **Monitor key metrics** using statistics tools
-3. **Set up drift alerts** to catch performance issues early
-4. **Investigate alerts** when they occur
+1. **Instrument your RAG pipeline** to log all queries with quality metrics
+2. **Define control limits** for key metrics (success rate, relevance, latency)
+3. **Set up drift detection** to alert when metrics exceed control limits
+4. **Review alerts** and investigate root causes
 
-**Example:**
+**Implementation pattern:**
 ```typescript
-// Step 1: Log every RAG query
-await rag_log_query({
-  query: userQuery,
-  retrievedDocuments: documents,
-  generationOutput: response,
-  qualityMetrics: {
-    retrievalRelevanceScore: calculateRelevance(userQuery, documents),
-    generationConfidence: model.getConfidence(),
-    latencyMs: responseTime,
-    tokenCount: countTokens(response)
-  },
-  success: !error,
-  errorDetails: error ? { message: error.message, stack: error.stack } : undefined
-});
-
-// Step 2: Check system health daily
-const dailyStats = await rag_get_statistics({
-  startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-  endTime: new Date().toISOString(),
-  granularity: "hour"
-});
-
-console.log(`Success rate: ${dailyStats.successRate * 100}%`);
-console.log(`Average relevance: ${dailyStats.avgRelevanceScore}`);
-
-// Step 3: Check for active alerts
-const alerts = await rag_get_drift_alerts();
-if (alerts.length > 0) {
-  console.log(`⚠️ ${alerts.length} active performance alerts`);
-  alerts.forEach(alert => {
-    console.log(`- ${alert.metric}: ${alert.message}`);
-  });
+// Log every RAG query with quality metrics
+function logRAGQuery(query: string, result: RAGResult) {
+  const metrics = {
+    query,
+    retrievedDocuments: result.documents,
+    generationOutput: result.response,
+    qualityMetrics: {
+      retrievalRelevanceScore: calculateRelevance(query, result.documents),
+      generationConfidence: result.confidence,
+      latencyMs: result.latency,
+      tokenCount: countTokens(result.response)
+    },
+    success: !result.error,
+    timestamp: new Date()
+  };
+  
+  // Store metrics for analysis
+  metricsStore.log(metrics);
+  
+  // Check against control limits
+  driftDetector.check(metrics);
 }
 ```
-
-**Common Errors:**
-- **Error**: "Vector database connection failed"
-  - **Cause**: Invalid API key or network issues
-  - **Solution**: Verify `VECTOR_DB_API_KEY` and network connectivity
 
 ### Workflow 2: Debugging RAG Failures
 
-**Goal**: Investigate and reproduce specific RAG failures for debugging
+**Goal**: Investigate and reproduce specific RAG failures
 
 **Steps:**
-1. **Get recent failures** to identify problematic queries
+1. **Capture failure context** including full system state
 2. **Replay failures** to reproduce issues deterministically
 3. **Search for similar errors** to understand patterns
-4. **Apply fixes** and verify resolution
+4. **Apply and verify fixes**
 
-**Example:**
+**Implementation pattern:**
 ```typescript
-// Step 1: Get recent failures
-const failures = await rag_get_recent_failures({
-  limit: 10,
-  errorType: "retrieval_failure"
-});
-
-console.log(`Found ${failures.length} recent retrieval failures`);
-
-// Step 2: Replay a specific failure
-const failureToDebug = failures[0];
-const replayResult = await rag_replay_failure({
-  failureId: failureToDebug.id
-});
-
-console.log(`Failure reproduced: ${replayResult.reproduced}`);
-if (!replayResult.reproduced) {
-  console.log(`Differences: ${replayResult.differences.join(", ")}`);
+// Capture complete failure context
+function captureFailure(query: string, error: Error, context: RAGContext) {
+  const failure = {
+    id: generateId(),
+    timestamp: new Date(),
+    query,
+    error: {
+      message: error.message,
+      stack: error.stack,
+      type: classifyError(error)
+    },
+    context: {
+      retrievedDocuments: context.documents,
+      embeddingModel: context.embeddingModel,
+      generationModel: context.generationModel,
+      temperature: context.temperature,
+      systemPrompt: context.systemPrompt
+    },
+    environment: {
+      nodeVersion: process.version,
+      dependencies: getDependencyVersions()
+    }
+  };
+  
+  failureStore.save(failure);
+  return failure.id;
 }
-
-// Step 3: Search for similar errors
-const similarErrors = await rag_search_similar_errors({
-  query: failureToDebug.errorMessage,
-  limit: 5
-});
-
-console.log(`Found ${similarErrors.length} similar errors`);
-similarErrors.forEach(error => {
-  console.log(`- ${error.type}: ${error.message} (${error.frequency} occurrences)`);
-});
 ```
-
-**Common Errors:**
-- **Error**: "Failure ID not found"
-  - **Cause**: Failure was not captured or ID is incorrect
-  - **Solution**: Verify failure ID from `rag_get_recent_failures` results
 
 ### Workflow 3: Learning from Past Errors
 
 **Goal**: Build institutional knowledge and get proactive fix suggestions
 
 **Steps:**
-1. **Search for similar errors** when encountering new issues
-2. **Get fix suggestions** based on past successful resolutions
-3. **Apply suggested fixes** and track their effectiveness
-4. **Build error knowledge base** over time
+1. **Store errors with embeddings** for semantic search
+2. **Search for similar errors** when encountering new issues
+3. **Track fix effectiveness** to rank suggestions
+4. **Surface relevant errors** during coding
 
-**Example:**
+**Implementation pattern:**
 ```typescript
-// Step 1: When you encounter an error, search for similar ones
-const currentError = "Embedding generation timeout after 30 seconds";
-const similarErrors = await rag_search_similar_errors({
-  query: currentError,
-  limit: 5
-});
-
-// Step 2: Get fix suggestions for the most similar error
-if (similarErrors.length > 0) {
-  const suggestions = await rag_suggest_fixes({
-    errorId: similarErrors[0].id
+// Search for similar past errors
+async function findSimilarErrors(errorMessage: string, limit: number = 5) {
+  const embedding = await generateEmbedding(errorMessage);
+  const similar = await vectorDb.search(embedding, {
+    topK: limit,
+    filter: { type: 'error' }
   });
   
-  console.log("Suggested fixes:");
-  suggestions.forEach(suggestion => {
-    console.log(`- ${suggestion.description} (${suggestion.successRate * 100}% success rate)`);
-    console.log(`  Reasoning: ${suggestion.reasoning}`);
-  });
+  return similar.map(result => ({
+    error: result.metadata,
+    similarity: result.score,
+    fixes: result.metadata.fixes || []
+  }));
 }
 
-// Step 3: After applying a fix, log the outcome
-await rag_log_query({
-  query: "Test query after applying timeout fix",
-  // ... other parameters
-  success: true, // or false if fix didn't work
-  errorDetails: undefined // or error details if still failing
-});
+// Get fix suggestions ranked by success rate
+function suggestFixes(similarErrors: SimilarError[]) {
+  const allFixes = similarErrors.flatMap(e => e.fixes);
+  
+  return allFixes
+    .sort((a, b) => b.successRate - a.successRate)
+    .slice(0, 5);
+}
 ```
-
-**Common Errors:**
-- **Error**: "No similar errors found"
-  - **Cause**: This is a novel error pattern
-  - **Solution**: This is expected for new error types - the system will learn from this error
-
-### Workflow 4: Proactive Error Prevention
-
-**Goal**: Surface relevant past errors during coding to prevent repeating mistakes
-
-**Steps:**
-1. **Get relevant errors** for your current coding context
-2. **Review warnings** and suggested fixes
-3. **Apply preventive measures** based on past learnings
-4. **Track helpfulness** of surfaced errors
-
-**Example:**
-```typescript
-// Step 1: Get relevant errors for current coding session
-const relevantErrors = await rag_get_relevant_errors({
-  currentFile: "src/rag/retriever.ts",
-  recentChanges: [
-    {
-      path: "src/rag/retriever.ts",
-      changeType: "modified",
-      diff: "+ const embeddings = await generateEmbeddings(query);"
-    }
-  ],
-  ragRelatedFiles: ["src/rag/retriever.ts", "src/rag/generator.ts"],
-  sessionId: "current-coding-session"
-});
-
-// Step 2: Review and act on warnings
-relevantErrors.forEach(error => {
-  console.log(`⚠️ ${error.warning}`);
-  if (error.suggestedFix) {
-    console.log(`💡 Suggested fix: ${error.suggestedFix.description}`);
-    console.log(`   Success rate: ${error.suggestedFix.successRate * 100}%`);
-  }
-});
-
-// Step 3: The system automatically learns from your coding patterns
-// and will surface increasingly relevant errors over time
-```
-
-**Common Errors:**
-- **Error**: "No relevant errors found"
-  - **Cause**: No past errors related to current coding context
-  - **Solution**: This is normal for new code areas - the system will learn as you work
-
-## Troubleshooting
-
-### MCP Server Connection Issues
-
-**Problem**: MCP server won't start or connect
-**Symptoms**:
-- Error: "Connection refused"
-- Server not responding
-- Tools not available in Kiro
-
-**Solutions**:
-1. **Verify environment variables are set correctly**:
-   ```bash
-   echo $VECTOR_DB_TYPE
-   echo $VECTOR_DB_API_KEY
-   ```
-2. **Check vector database connectivity**:
-   - Test API key with vector database directly
-   - Verify network access to vector database service
-3. **Review MCP server logs** for specific errors
-4. **Restart Kiro** and try reconnecting to MCP server
-
-### Vector Database Issues
-
-**Problem**: Vector database operations failing
-**Symptoms**:
-- Error: "Index not found"
-- Error: "Authentication failed"
-- Slow query performance
-
-**Solutions**:
-1. **Verify index exists**:
-   - Check your vector database dashboard
-   - Create index if missing with correct dimensions (1536 for OpenAI embeddings)
-2. **Check API key permissions**:
-   - Ensure API key has read/write access to the index
-   - Verify API key is not expired
-3. **Optimize query performance**:
-   - Use appropriate filters in queries
-   - Consider index configuration for your use case
-
-### High Memory Usage
-
-**Problem**: MCP server consuming excessive memory
-**Symptoms**:
-- System slowdown
-- Out of memory errors
-- High memory usage in task manager
-
-**Solutions**:
-1. **Configure storage backend**:
-   - Use `sqlite` or `postgres` instead of `memory` for large datasets
-   - Set `STORAGE_TYPE=sqlite` and `STORAGE_CONNECTION_STRING`
-2. **Limit query batch sizes**:
-   - Process queries in smaller batches
-   - Use streaming for large volumes
-3. **Clean up old data**:
-   - Implement data retention policies
-   - Archive old error records
-
-### Performance Issues
-
-**Problem**: Slow response times from MCP tools
-**Symptoms**:
-- Tools taking >5 seconds to respond
-- Timeouts in Kiro
-- Degraded user experience
-
-**Solutions**:
-1. **Optimize vector database queries**:
-   - Use appropriate similarity thresholds
-   - Limit result counts with `limit` parameters
-2. **Configure appropriate time windows**:
-   - Use smaller time ranges for statistics
-   - Consider caching for frequently accessed data
-3. **Check system resources**:
-   - Monitor CPU and memory usage
-   - Consider scaling vector database if needed
 
 ## Best Practices
 
 ### 1. Comprehensive Logging
 
-**Log all RAG operations, not just failures**:
+Log all RAG operations, not just failures:
 - Include quality metrics for every query
 - Log successful queries to establish baselines
 - Capture context information for better debugging
 
 ### 2. Meaningful Quality Metrics
 
-**Provide accurate quality metrics for effective monitoring**:
+Provide accurate quality metrics for effective monitoring:
 - Calculate relevance scores based on your specific use case
 - Use confidence scores from your generation model
 - Track latency at appropriate granularity
@@ -438,7 +238,7 @@ relevantErrors.forEach(error => {
 
 ### 3. Regular Monitoring
 
-**Check system health proactively**:
+Check system health proactively:
 - Review daily statistics for trends
 - Set up alerts for critical metrics
 - Monitor drift alerts and investigate promptly
@@ -446,106 +246,76 @@ relevantErrors.forEach(error => {
 
 ### 4. Error Knowledge Building
 
-**Build institutional knowledge systematically**:
+Build institutional knowledge systematically:
 - Search for similar errors before creating new tickets
 - Document fix outcomes and success rates
 - Share learnings across team members
 - Use relevant error surfacing during code reviews
 
-### 5. Configuration Management
+### 5. Statistical Process Control
 
-**Manage configuration properly**:
-- Use environment variables for sensitive data
-- Document configuration requirements clearly
-- Test configuration changes in staging first
-- Keep backup configurations for rollback
+Use SPC principles for drift detection:
+- Calculate control limits from baseline data
+- Use appropriate sigma levels (2-sigma for 95% confidence)
+- Update baselines periodically
+- Distinguish between common cause and special cause variation
 
-## Configuration
+## Troubleshooting
 
-### Vector Database Configuration
+### High False Positive Rate in Drift Detection
 
-**Pinecone Configuration**:
-```bash
-VECTOR_DB_TYPE=pinecone
-VECTOR_DB_API_KEY=your-pinecone-api-key
-VECTOR_DB_ENVIRONMENT=us-west1-gcp
-VECTOR_DB_INDEX_NAME=rag-observability
-```
+**Problem**: Too many alerts that aren't real issues
 
-**Chroma Configuration**:
-```bash
-VECTOR_DB_TYPE=chroma
-VECTOR_DB_API_KEY=your-chroma-api-key
-VECTOR_DB_ENVIRONMENT=production
-VECTOR_DB_INDEX_NAME=rag-errors
-```
+**Solutions**:
+1. Increase sigma level (e.g., from 2 to 3)
+2. Use longer baseline periods
+3. Filter out known transient issues
+4. Implement alert suppression for maintenance windows
 
-### Storage Configuration
+### Poor Error Similarity Matching
 
-**Memory Storage (Default)**:
-```bash
-STORAGE_TYPE=memory
-```
+**Problem**: Similar error search returns irrelevant results
 
-**SQLite Storage**:
-```bash
-STORAGE_TYPE=sqlite
-STORAGE_CONNECTION_STRING=./rag-observability.db
-```
+**Solutions**:
+1. Improve embedding model for your domain
+2. Add metadata filters (error type, component)
+3. Use hybrid search (semantic + keyword)
+4. Fine-tune similarity thresholds
 
-**PostgreSQL Storage**:
-```bash
-STORAGE_TYPE=postgres
-STORAGE_CONNECTION_STRING=postgresql://user:password@localhost:5432/rag_observability
-```
+### Slow Query Performance
 
-### Monitoring Configuration
+**Problem**: Monitoring adds too much latency
 
-**Control Limits**:
-```bash
-SUCCESS_RATE_LOWER=0.85      # Alert if success rate drops below 85%
-RELEVANCE_SCORE_LOWER=0.7    # Alert if relevance drops below 0.7
-LATENCY_UPPER=5000           # Alert if latency exceeds 5 seconds
-CONTROL_SIGMA=2              # 2-sigma control limits (95% confidence)
-```
+**Solutions**:
+1. Use async logging (don't block main path)
+2. Batch metrics writes
+3. Sample high-volume queries
+4. Use efficient vector database indexes
 
-### Self-Improvement Configuration
+## Configuration Reference
 
-**Error Surfacing**:
-```bash
-STEERING_RULE_THRESHOLD=3    # Generate rule after 3 successful fixes
-MAX_RELEVANT_ERRORS=5        # Max errors to surface per coding session
-RELEVANCE_THRESHOLD=0.6      # Minimum relevance score to surface error
-```
+### Control Limits
 
-## MCP Config Placeholders
+| Metric | Default | Description |
+|--------|---------|-------------|
+| Success Rate Lower | 0.85 | Alert if success rate drops below 85% |
+| Relevance Score Lower | 0.7 | Alert if average relevance drops below 0.7 |
+| Latency Upper | 5000ms | Alert if P95 latency exceeds 5 seconds |
+| Control Sigma | 2 | 2-sigma = 95% confidence interval |
 
-**IMPORTANT**: Before using this power, replace the following placeholders in `mcp.json` with your actual values:
+### Storage Options
 
-- **`YOUR_VECTOR_DB_API_KEY`**: Your vector database API key (Pinecone or Chroma).
-  - **How to get it**:
-    1. Go to your vector database dashboard (Pinecone Console or Chroma admin)
-    2. Navigate to API Keys section
-    3. Create or copy your API key
-    4. Set as environment variable: `VECTOR_DB_API_KEY=your-actual-key`
+| Type | Use Case | Pros | Cons |
+|------|----------|------|------|
+| Memory | Development | Fast, simple | Lost on restart |
+| SQLite | Single instance | Persistent, simple | Not distributed |
+| PostgreSQL | Production | Scalable, reliable | More setup |
 
-- **`YOUR_VECTOR_DB_ENVIRONMENT`**: Your vector database environment/region.
-  - **How to get it**: Check your vector database dashboard for environment name (e.g., "us-west1-gcp" for Pinecone)
+### Vector Database Options
 
-- **`YOUR_INDEX_NAME`**: Name of your vector database index for storing error embeddings.
-  - **How to set it**: Choose a descriptive name (e.g., "rag-observability-errors") and create the index in your vector database with 1536 dimensions
+| Database | Use Case | Pros | Cons |
+|----------|----------|------|------|
+| Pinecone | Production | Managed, scalable | Cost |
+| Chroma | Development | Free, local | Less scalable |
+| Weaviate | Self-hosted | Full control | Ops overhead |
 
-After replacing placeholders, your environment should look like:
-```bash
-VECTOR_DB_TYPE=pinecone
-VECTOR_DB_API_KEY=pk-abc123xyz789...
-VECTOR_DB_ENVIRONMENT=us-west1-gcp
-VECTOR_DB_INDEX_NAME=rag-observability-errors
-STORAGE_TYPE=sqlite
-STORAGE_CONNECTION_STRING=./rag-observability.db
-```
-
----
-
-**Package**: `rag-observability-power`
-**MCP Server**: rag-observability-power
