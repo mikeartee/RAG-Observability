@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "rag-observability-power": {
+      "command": "node",
+      "args": ["YOUR_RAG_OBSERVABILITY_SERVER_PATH"],
+      "env": {
+        "VECTOR_DB_TYPE": "YOUR_VECTOR_DB_TYPE",
+        "VECTOR_DB_API_KEY": "YOUR_VECTOR_DB_API_KEY",
+        "VECTOR_DB_ENVIRONMENT": "YOUR_VECTOR_DB_ENVIRONMENT",
+        "VECTOR_DB_INDEX_NAME": "YOUR_INDEX_NAME",
+        "STORAGE_TYPE": "sqlite",
+        "STORAGE_CONNECTION_STRING": "./rag-observability.db",
+        "SUCCESS_RATE_LOWER": "0.85",
+        "RELEVANCE_SCORE_LOWER": "0.7",
+        "LATENCY_UPPER": "5000",
+        "CONTROL_SIGMA": "2"
+      }
+    }
+  }
+}

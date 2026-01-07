@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+        cache-dependency-path: src/rag-observability-power/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd src/rag-observability-power
+        npm ci
+    
+    - name: Run tests
+      run: |
+        cd src/rag-observability-power
+        npm test
+    
+    - name: Build project
+      run: |
+        cd src/rag-observability-power
+        npm run build
+    
+    - name: Update package version
+      run: |
+        cd src/rag-observability-power
+        npm version ${{ github.event.release.tag_name }} --no-git-tag-version
+    
+    - name: Publish to npm
+      run: |
+        cd src/rag-observability-power
+        npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

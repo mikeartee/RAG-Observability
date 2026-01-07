@@ -1,0 +1,252 @@
+{
+  "name": "rag-observability-power",
+  "version": "1.0.0",
+  "description": "MCP server for RAG Observability Power - comprehensive RAG system monitoring and self-improvement",
+  "main": "dist/mcp-server.js",
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "tools": [
+    {
+      "name": "rag_log_query",
+      "description": "Log a RAG query event with quality metrics for monitoring and analysis",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The user query"
+          },
+          "retrievedDocuments": {
+            "type": "array",
+            "description": "Documents retrieved by the RAG system",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "content": { "type": "string" },
+                "score": { "type": "number" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "generationOutput": {
+            "type": "string",
+            "description": "Generated response"
+          },
+          "qualityMetrics": {
+            "type": "object",
+            "description": "Quality metrics for the query",
+            "properties": {
+              "retrievalRelevanceScore": { "type": "number" },
+              "generationConfidence": { "type": "number" },
+              "latencyMs": { "type": "number" },
+              "tokenCount": { "type": "number" }
+            }
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the query succeeded"
+          },
+          "errorDetails": {
+            "type": "object",
+            "description": "Error details if query failed"
+          }
+        },
+        "required": ["query", "retrievedDocuments", "generationOutput", "success"]
+      }
+    },
+    {
+      "name": "rag_get_relevant_errors",
+      "description": "Get relevant past errors for the current coding context to avoid repeating mistakes",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "currentFile": {
+            "type": "string",
+            "description": "Current file being edited"
+          },
+          "recentChanges": {
+            "type": "array",
+            "description": "Recent file changes",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string" },
+                "changeType": { "type": "string" },
+                "diff": { "type": "string" }
+              }
+            }
+          },
+          "ragRelatedFiles": {
+            "type": "array",
+            "description": "Files related to RAG functionality",
+            "items": { "type": "string" }
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Coding session identifier"
+          }
+        },
+        "required": ["currentFile", "sessionId"]
+      }
+    },
+    {
+      "name": "rag_suggest_fixes",
+      "description": "Get fix suggestions for a specific error based on past similar errors",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "errorId": {
+            "type": "string",
+            "description": "Error ID to get suggestions for"
+          }
+        },
+        "required": ["errorId"]
+      }
+    },
+    {
+      "name": "rag_get_drift_alerts",
+      "description": "Get active drift alerts showing RAG performance degradation",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "rag_get_statistics",
+      "description": "Get RAG system statistics for a time window",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "Start time (ISO 8601 format)"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time (ISO 8601 format)"
+          },
+          "granularity": {
+            "type": "string",
+            "description": "Time granularity",
+            "enum": ["minute", "hour", "day", "week"]
+          }
+        },
+        "required": ["startTime", "endTime", "granularity"]
+      }
+    },
+    {
+      "name": "rag_get_recent_failures",
+      "description": "Get recent RAG failures with full context for debugging",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of failures to return"
+          },
+          "errorType": {
+            "type": "string",
+            "description": "Filter by error type"
+          }
+        }
+      }
+    },
+    {
+      "name": "rag_replay_failure",
+      "description": "Replay a captured failure to reproduce and debug probabilistic issues",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "failureId": {
+            "type": "string",
+            "description": "Failure ID to replay"
+          }
+        },
+        "required": ["failureId"]
+      }
+    },
+    {
+      "name": "rag_search_similar_errors",
+      "description": "Search for errors similar to a given query or error",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query or error description"
+          },
+          "errorType": {
+            "type": "string",
+            "description": "Filter by error type"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of results"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ],
+  "configuration": {
+    "vectorDb": {
+      "type": "object",
+      "description": "Vector database configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pinecone", "chroma"],
+          "description": "Vector database type"
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "API key for vector database"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment for vector database"
+        },
+        "indexName": {
+          "type": "string",
+          "description": "Index name for vector database"
+        }
+      },
+      "required": ["type"]
+    },
+    "storage": {
+      "type": "object",
+      "description": "Storage configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["memory", "sqlite", "postgres"],
+          "description": "Storage backend type"
+        },
+        "connectionString": {
+          "type": "string",
+          "description": "Database connection string (for sqlite/postgres)"
+        }
+      },
+      "required": ["type"]
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Monitoring configuration",
+      "properties": {
+        "controlLimits": {
+          "type": "object",
+          "properties": {
+            "successRateLower": { "type": "number" },
+            "relevanceScoreLower": { "type": "number" },
+            "latencyUpper": { "type": "number" },
+            "sigma": { "type": "number" }
+          }
+        }
+      }
+    }
+  }
+}
